@@ -10,7 +10,6 @@ namespace FlightPlannerFinal.Controllers
     [ApiController]
     public class AdminController : ControllerBase
     {
-
         [HttpGet]
         [Route("flights/{id}")]
         public IActionResult GetFlight(int id)
