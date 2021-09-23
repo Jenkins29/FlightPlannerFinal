@@ -24,7 +24,6 @@ namespace FlightPlannerFinal.Controllers
         [Route("flights/search")]
         public IActionResult SearchFlights(SearchFlightsRequest req)
         {
-
             if (req.From == req.To)
             {
                 return BadRequest();
