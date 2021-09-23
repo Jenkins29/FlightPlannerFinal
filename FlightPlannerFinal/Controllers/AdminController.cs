@@ -1,6 +1,4 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using FlightPlannerFinal.Models;
 using FlightPlannerFinal.Storage;
@@ -32,8 +30,8 @@ namespace FlightPlannerFinal.Controllers
             var validation = FlightStorage.FlightValidation(flight);
             if (!validation) return BadRequest();
 
-            var same = FlightStorage.SameFlightValidation(flight);
-            if (same) return Conflict();
+            var isSame = FlightStorage.SameFlightValidation(flight);
+            if (isSame) return Conflict();
 
             FlightStorage.AddFlight(flight);
             return Created("", flight);

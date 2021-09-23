@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using FlightPlannerFinal.Models;
+﻿using FlightPlannerFinal.Models;
 using FlightPlannerFinal.Storage;
 using Microsoft.AspNetCore.Mvc;
 
-namespace FlightPlanner.Core.Controllers
+namespace FlightPlannerFinal.Controllers
 {
     [Route("api")]
     [ApiController]
@@ -14,13 +10,12 @@ namespace FlightPlanner.Core.Controllers
     {
         [HttpGet]
         [Route("airports")]
-
         public IActionResult Search(string search)
         {
-            AirportRequest[] arr = new AirportRequest[1];
+            AirportRequest[] airportRequests = new AirportRequest[1];
             var result = FlightStorage.SearchAirport(search);
-            arr[0] = result;
-            if (result is not null) return Ok(arr);
+            airportRequests[0] = result;
+            if (result is not null) return Ok(airportRequests);
 
             return Ok();
         }
