@@ -1,49 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using FlightPlannerFinal.DbContext;
 using FlightPlannerFinal.Models;
 
 namespace FlightPlannerFinal.Storage
 {
     public static class FlightStorage
     {
-        private static List<Flight> _flights = new List<Flight>();
         private static readonly object padlock = new object();
-        private static int Id;
-        public static Flight GetById(int id)
-        {
-            return _flights.FirstOrDefault(flight => flight.Id == id);
-        }
-
-        public static List<Flight> GetAllFlights()
-        {
-            return _flights.ToList();
-        }
-
-        public static void ClearFlights()
-        {
-            _flights.Clear();
-        }
-
-        public static Flight AddFlight(Flight flight)
+        public static bool SameFlightValidation(Flight flight, FlightPlannerDbContext context)
         {
             lock (padlock)
             {
-                flight.Id = ++Id;
-                _flights.Add(flight);
-                return flight;
-            }
-        }
+                var result = context.Flights.Any(f => f.from.Airport == flight.from.Airport &&
+                                                      f.to.Airport == flight.to.Airport &&
+                                                      f.DepartureTime == flight.DepartureTime &&
+                                                      f.carrier == flight.carrier);
 
-        public static bool SameFlightValidation(Flight flight)
-        {
-            lock (padlock)
-            {
-                var result = _flights.Find(f => f.DepartureTime == flight.DepartureTime &&
-                                                    f.from.Airport == flight.from.Airport &&
-                                                    f.to.Airport == flight.to.Airport &&
-                                                    f.carrier == flight.carrier);
-                return result != null;
+                return result;
             }
         }
 
@@ -70,42 +45,32 @@ namespace FlightPlannerFinal.Storage
             return true;
         }
 
-        public static void DeleteFlight(int id)
-        {
-            lock (padlock)
-            {
-                var flightToDelete = GetById(id);
-                _flights.Remove(flightToDelete);
-            }
-        }
-
-        public static AirportRequest SearchAirport(string phrase)
+        public static AirportRequest SearchAirport(string phrase, FlightPlannerDbContext context)
         {
             if (phrase.ToUpper().Trim() == "RIX" || phrase.ToUpper().Trim() == "RI" || phrase.ToUpper().Trim() == "RIG"
                 || phrase.ToUpper().Trim() == "LATV" || phrase.ToUpper().Trim() == "LATVIA" || phrase.ToUpper().Trim() == "RIGA")
                 phrase = "RIX";
 
+            var result = context.Airports.Where(a => a.Airport == phrase).Single();
 
-            var result = _flights.Find(it => it.from.Airport == phrase);
-
-            return result.from;
+            return result;
         }
 
-        public static PageResult SearchFlightRequest(SearchFlightsRequest req)
+        public static PageResult SearchFlightRequest(SearchFlightsRequest req, List<Flight> flights)
         {
             PageResult page = new PageResult();
-
-            foreach (Flight flight in _flights)
-            {
-                if (req.From == flight.from.Airport &&
-                    req.To == flight.to.Airport)
+            
+                foreach (Flight flight in flights)
                 {
-                    page.Items.Add(flight);
-                    page.Page = page.Items.Count;
-                    page.TotalItems = page.Items.Count;
-                    return page;
+                    if (req.From == flight.from.Airport &&
+                        req.To == flight.to.Airport)
+                    {
+                        page.Items.Add(flight);
+                        page.Page = page.Items.Count;
+                        page.TotalItems = page.Items.Count;
+                        return page;
+                    }
                 }
-            }
 
             return page;
         }
